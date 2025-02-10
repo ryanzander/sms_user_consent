@@ -1,5 +1,5 @@
 package dev.pharsh.sms_user_consent
-
+import android.os.Build
 import android.app.Activity
 import android.content.*
 import androidx.annotation.NonNull
@@ -41,7 +41,22 @@ class SmsUserConsentPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             }
             "requestSms" -> {
                 SmsRetriever.getClient(mActivity.applicationContext).startSmsUserConsent(call.argument("senderPhoneNumber"))
-                mActivity.registerReceiver(smsVerificationReceiver, IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION), SmsRetriever.SEND_PERMISSION, null)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    mActivity.registerReceiver(
+                        smsVerificationReceiver,
+                        IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION),
+                        SmsRetriever.SEND_PERMISSION,
+                        null,
+                        Context.RECEIVER_EXPORTED,
+                    )
+                } else {
+                    mActivity.registerReceiver(
+                        smsVerificationReceiver,
+                        IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION),
+                        SmsRetriever.SEND_PERMISSION,
+                        null,
+                    )
+                }
                 result.success(null)
             }
         }
